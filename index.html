@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特殊符号集 - 一键复制</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            flex: 1;
+            padding-bottom: 20px;
+            width: 100%;
+        }
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+        .description {
+            color: #7f8c8d;
+            max-width: 800px;
+            margin: 0 auto 15px;
+            padding: 0 20px;
+            font-size: 0.95rem;
+        }
+        .search-container {
+            margin: 25px auto;
+            max-width: 600px;
+            position: relative;
+            width: 90%;
+        }
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #3498db;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: border-color 0.3s;
+        }
+        .search-box:focus {
+            border-color: #2980b9;
+            outline: none;
+        }
+        .search-box::placeholder {
+            color: #95a5a6;
+        }
+        .symbols-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .category-section {
+            margin-bottom: 30px;
+            border-radius: 8px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            scroll-margin-top: 70px;
+        }
+        .category-header {
+            font-size: 1.3rem;
+            color: #2980b9;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .symbol-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #eaeaea;
+            position: relative;
+            overflow: hidden;
+        }
+        .symbol-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        .symbol-card:hover::before {
+            transform: scaleX(1);
+        }
+        .symbol-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        .symbol {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+        .symbol-card:hover .symbol {
+            transform: scale(1.1);
+        }
+        .symbol-name {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .copied-alert {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            padding: 12px 20px;
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            transform: translateX(200%);
+            transition: transform 0.4s cubic-bezier(.17,.67,.41,1.44);
+            z-index: 1000;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        .copied-alert.show {
+            transform: translateX(0);
+        }
+        .copied-alert::before {
+            content: '✓';
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        /* 分类导航样式 */
+        .category-nav {
+            position: sticky;
+            top: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 12px 0;
+            z-index: 100;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        .category-link {
+            padding: 8px 15px;
+            background: linear-gradient(to right, #f8f9fa, #ecf4fe);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #2980b9;
+            font-weight: 600;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e0eefd;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .category-link:hover, .category-link.active {
+            background: linear-gradient(to right, #e3f0ff, #d1e6ff);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.15);
+            color: #1c6ea4;
+        }
+        
+        footer {
+            background: linear-gradient(to right, #34495e, #2c3e50);
+            color: #ecf0f1;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            font-size: 0.85rem;
+            padding: 0 20px;
+        }
+        .copyright {
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 12px 0 15px;
+            flex-wrap: wrap;
+        }
+        .footer-link {
+            color: #a0c8ff;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.9rem;
+        }
+        .footer-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+        .disclaimer {
+            max-width: 800px;
+            margin: 12px auto 0;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #ced4da;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 小屏设备优化 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding-bottom: 15px;
+            }
+            
+            header {
+                padding: 15px 0;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .description {
+                font-size: 0.9rem;
+                padding: 0 15px;
+            }
+            
+            .search-container {
+                margin: 20px auto;
+            }
+            
+            .symbols-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 12px;
+            }
+            
+            .symbol {
+                font-size: 1.8rem;
+            }
+            
+            .symbol-name {
+                font-size: 0.8rem;
+            }
+            
+            .category-nav {
+                padding: 10px 0;
+            }
+            
+            .category-link {
+                padding: 7px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .category-section {
+                padding: 15px;
+                margin-bottom: 25px;
+            }
+            
+            .category-header {
+                font-size: 1.2rem;
+                padding-bottom: 10px;
+                margin-bottom: 12px;
+            }
+            
+            .footer-links {
+                gap: 15px;
+                margin: 10px 0 12px;
+            }
+            
+            .footer-content {
+                padding: 0 15px;
+            }
+            
+            .copied-alert {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .symbols-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 10px;
+            }
+            
+            .symbol {
+                font-size: 1.6rem;
+            }
+            
+            .symbol-name {
+                font-size: 0.75rem;
+            }
+            
+            .category-link {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .search-box {
+                padding: 10px 16px;
+            }
+            
+            .category-header {
+                font-size: 1.1rem;
+            }
+            
+            .footer-links {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>特殊符号集合</h1>
+            <p class="description">使用符号前请确认适用性，本网站仅提供符号的复制功能</p>
+        </header>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="搜索符号名称或符号..." autocomplete="off">
+        </div>
+        
+        <!-- 分类导航栏 -->
+        <div class="category-nav">
+            <div class="nav-container" id="categoryNav">
+                <!-- 分类导航将通过JavaScript动态生成 -->
+            </div>
+        </div>
+        
+        <div id="symbolsContainer">
+            <!-- 符号分类将通过JavaScript动态生成 -->
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer>
+        <div class="footer-content">
+            <div class="copyright">© 2025 特殊符号集 | 免费在线工具</div>
+            <div class="footer-links">
+                <a href="#" class="footer-link">关于本工具</a>
+                <a href="#" class="footer-link">联系方式</a>
+            </div>
+            <div class="disclaimer">
+                免责声明：本网站提供的符号属于通用字符，版权归相应实体所有。本网站仅为方便用户复制使用而提供这些符号，不对符号的使用承担任何责任。用户应自行确认这些符号的使用符合相关规定并遵守知识产权法律。
+            </div>
+        </div>
+    </footer>
+    
+    <div class="copied-alert" id="copiedAlert">符号已复制到剪贴板</div>
+    
+    <script>
+        // 符号数据（按分类分组）
+        const symbolsData = [
+            {
+                id: "math",
+                name: "数学符号",
+                symbols: [
+                    { char: '+', name: '加号' },
+                    { char: '−', name: '减号' },
+                    { char: '×', name: '乘号' },
+                    { char: '÷', name: '除号' },
+                    { char: '=', name: '等号' },
+                    { char: '≠', name: '不等号' },
+                    { char: '≈', name: '约等于' },
+                    { char: '±', name: '正负号' },
+                    { char: '∞', name: '无穷大' },
+                    { char: '∑', name: '求和' },
+                    { char: '√', name: '平方根' },
+                    { char: '∫', name: '积分' },
+                    { char: '∏', name: '乘积' },
+                    { char: '∆', name: '差值' },
+                    { char: '∠', name: '角度' },
+                    { char: '∡', name: '量角器' },
+                    { char: '∟', name: '直角' },
+                    { char: '∝', name: '成正比' },
+                    { char: '∥', name: '平行' },
+                    { char: '⟂', name: '垂直' },
+                    { char: 'ℵ', name: '阿列夫' },
+                    { char: '∂', name: '偏微分' },
+                    { char: '∇', name: '梯度' },
+                    { char: '∈', name: '属于' },
+                    { char: '∉', name: '不属于' },
+                    { char: '⊂', name: '子集' },
+                    { char: '⊃', name: '超集' },
+                    { char: '∩', name: '交集' },
+                    { char: '∪', name: '并集' },
+                    { char: '∴', name: '所以' },
+                    { char: '∵', name: '因为' }
+                ]
+            },
+            {
+                id: "arrows",
+                name: "箭头符号",
+                symbols: [
+                    { char: '→', name: '右箭头' },
+                    { char: '←', name: '左箭头' },
+                    { char: '↑', name: '上箭头' },
+                    { char: '↓', name: '下箭头' },
+                    { char: '↔', name: '左右箭头' },
+                    { char: '↕', name: '上下箭头' },
+                    { char: '↵', name: '回车箭头' },
+                    { char: '➔', name: '右箭头' },
+                    { char: '⇦', name: '左双箭头' },
+                    { char: '⇧', name: '上双箭头' },
+                    { char: '⇩', name: '下双箭头' },
+                    { char: '⇨', name: '右双箭头' },
+                    { char: '↗', name: '右上箭头' },
+                    { char: '↘', name: '右下箭头' },
+                    { char: '↖', name: '左上箭头' },
+                    { char: '↙', name: '左下箭头' },
+                    { char: '↶', name: '左弯箭头' },
+                    { char: '↷', name: '右弯箭头' },
+                    { char: '↻', name: '顺时针旋转' },
+                    { char: '↺', name: '逆时针旋转' },
+                    { char: '⇄', name: '左右交换' },
+                    { char: '⇆', name: '左右交换' },
+                    { char: '⇅', name: '上下交换' },
+                    { char: '⥆', name: '弯箭头' },
+                    { char: '⤴', name: '上弯箭头' },
+                    { char: '⤵', name: '下弯箭头' },
+                    { char: '➤', name: '单线箭头' },
+                    { char: '➼', name: '闪电箭头' },
+                    { char: '➵', name: '空心箭头' },
+                    { char: '⇶', name: '三箭头' }
+                ]
+            },
+            {
+                id: "currency",
+                name: "货币符号",
+                symbols: [
+                    { char: '$', name: '美元' },
+                    { char: '€', name: '欧元' },
+                    { char: '£', name: '英镑' },
+                    { char: '¥', name: '日元/人民币' },
+                    { char: '₩', name: '韩元' },
+                    { char: '₹', name: '印度卢比' },
+                    { char: '₽', name: '卢布' },
+                    { char: '₴', name: '格里夫纳' },
+                    { char: '₱', name: '比索' },
+                    { char: '฿', name: '泰铢' },
+                    { char: '₿', name: '比特币' },
+                    { char: '₪', name: '新谢克尔' },
+                    { char: '﷼', name: '里亚尔' },
+                    { char: '₦', name: '尼日利亚奈拉' },
+                    { char: '₲', name: '巴拉圭瓜拉尼' },
+                    { char: '₫', name: '越南盾' },
+                    { char: '₸', name: '哈萨克坚戈' },
+                    { char: '₡', name: '哥斯达黎加科朗' },
+                    { char: '₢', name: '克鲁塞罗(旧)' },
+                    { char: '₤', name: '旧里拉' }
+                ]
+            },
+            {
+                id: "shapes",
+                name: "形状符号",
+                symbols: [
+                    { char: '★', name: '实心五角星' },
+                    { char: '☆', name: '空心五角星' },
+                    { char: '■', name: '实心方块' },
+                    { char: '□', name: '空心方块' },
+                    { char: '●', name: '实心圆' },
+                    { char: '○', name: '空心圆' },
+                    { char: '◆', name: '实心菱形' },
+                    { char: '◇', name: '空心菱形' },
+                    { char: '▲', name: '实心三角形' },
+                    { char: '△', name: '空心三角形' },
+                    { char: '►', name: '实心右三角' },
+                    { char: '◄', name: '实心左三角' },
+                    { char: '◘', name: '反白点' },
+                    { char: '◙', name: '反白点' },
+                    { char: '☑', name: '勾选框' },
+                    { char: '✓', name: '对勾' },
+                    { char: '✗', name: '叉' },
+                    { char: '✘', name: '粗叉' },
+                    { char: '✖', name: '叉号' },
+                    { char: '✚', name: '加号' },
+                    { char: '✧', name: '八角星' },
+                    { char: '✦', name: '实心八角星' },
+                    { char: '❖', name: '菱形点' },
+                    { char: '✶', name: '六角星' },
+                    { char: '✽', name: '花形' },
+                    { char: '❀', name: '花朵' },
+                    { char: '❃', name: '螺旋花' },
+                    { char: '❁', name: '花朵' },
+                    { char: '❋', name: '五角花' },
+                    { char: '✵', name: '八角旋转星' }
+                ]
+            },
+            {
+                id: "special-chars",
+                name: "特殊字符",
+                symbols: [
+                    { char: '©', name: '版权符号' },
+                    { char: '®', name: '注册商标' },
+                    { char: '™', name: '商标符号' },
+                    { char: '℃', name: '摄氏度' },
+                    { char: '℉', name: '华氏度' },
+                    { char: '♂', name: '男性符号' },
+                    { char: '♀', name: '女性符号' },
+                    { char: '♪', name: '音符' },
+                    { char: '♫', name: '双音符' },
+                    { char: '♥', name: '红心' },
+                    { char: '♦', name: '方块' },
+                    { char: '♣', name: '梅花' },
+                    { char: '♠', name: '黑桃' },
+                    { char: '☀', name: '太阳' },
+                    { char: '☁', name: '云' },
+                    { char: '☂', name: '雨伞' },
+                    { char: '☃', name: '雪人' },
+                    { char: '☄', name: '彗星' },
+                    { char: '☈', name: '闪电' },
+                    { char: '☎', name: '电话' },
+                    { char: '☎', name: '电话' },
+                    { char: '✆', name: '电话' },
+                    { char: '✉', name: '邮箱' },
+                    { char: '☑', name: '复选框' },
+                    { char: '☒', name: '已选框' },
+                    { char: '⌘', name: '命令键' },
+                    { char: '⌥', name: 'Option键' },
+                    { char: '⌃', name: 'Control键' },
+                    { char: '⌫', name: '删除键' },
+                    { char: '⇥', name: 'Tab键' }
+                ]
+            },
+            {
+                id: "greek",
+                name: "希腊字母",
+                symbols: [
+                    { char: 'α', name: 'Alpha' },
+                    { char: 'β', name: 'Beta' },
+                    { char: 'γ', name: 'Gamma' },
+                    { char: 'δ', name: 'Delta' },
+                    { char: 'ε', name: 'Epsilon' },
+                    { char: 'ζ', name: 'Zeta' },
+                    { char: 'η', name: 'Eta' },
+                    { char: 'θ', name: 'Theta' },
+                    { char: 'ι', name: 'Iota' },
+                    { char: 'κ', name: 'Kappa' },
+                    { char: 'λ', name: 'Lambda' },
+                    { char: 'μ', name: 'Mu' },
+                    { char: 'ν', name: 'Nu' },
+                    { char: 'ξ', name: 'Xi' },
+                    { char: 'ο', name: 'Omicron' },
+                    { char: 'π', name: 'Pi' },
+                    { char: 'ρ', name: 'Rho' },
+                    { char: 'σ', name: 'Sigma' },
+                    { char: 'τ', name: 'Tau' },
+                    { char: 'υ', name: 'Upsilon' },
+                    { char: 'φ', name: 'Phi' },
+                    { char: 'χ', name: 'Chi' },
+                    { char: 'ψ', name: 'Psi' },
+                    { char: 'ω', name: 'Omega' },
+                    { char: 'Α', name: 'Alpha(大写)' },
+                    { char: 'Β', name: 'Beta(大写)' },
+                    { char: 'Γ', name: 'Gamma(大写)' },
+                    { char: 'Δ', name: 'Delta(大写)' },
+                    { char: 'Θ', name: 'Theta(大写)' },
+                    { char: 'Π', name: 'Pi(大写)' },
+                    { char: 'Σ', name: 'Sigma(大写)' },
+                    { char: 'Ω', name: 'Omega(大写)' },
+                    { char: 'Λ', name: 'Lambda(大写)' },
+                    { char: 'Ξ', name: 'Xi(大写)' },
+                    { char: 'Ψ', name: 'Psi(大写)' }
+                ]
+            },
+            {
+                id: "table",
+                name: "表格符号",
+                symbols: [
+                    { char: '─', name: '单横线' },
+                    { char: '│', name: '单竖线' },
+                    { char: '┌', name: '左上角' },
+                    { char: '┐', name: '右上角' },
+                    { char: '└', name: '左下角' },
+                    { char: '┘', name: '右下角' },
+                    { char: '├', name: '左连接' },
+                    { char: '┤', name: '右连接' },
+                    { char: '┬', name: '上连接' },
+                    { char: '┴', name: '下连接' },
+                    { char: '┼', name: '十字连接' },
+                    { char: '═', name: '双横线' },
+                    { char: '║', name: '双竖线' },
+                    { char: '╔', name: '双左上角' },
+                    { char: '╗', name: '双右上角' },
+                    { char: '╚', name: '双左下角' },
+                    { char: '╝', name: '双右下角' },
+                    { char: '╠', name: '双左连接' },
+                    { char: '╣', name: '双右连接' },
+                    { char: '╦', name: '双上连接' },
+                    { char: '╩', name: '双下连接' },
+                    { char: '╬', name: '双十字连接' },
+                    { char: '╞', name: '左连接' },
+                    { char: '╡', name: '右连接' },
+                    { char: '╥', name: '下连接' },
+                    { char: '╨', name: '上连接' },
+                    { char: '╫', name: '交叉连接' },
+                    { char: '╪', name: '水平连接' },
+                    { char: '◢', name: '左下角块' },
+                    { char: '◣', name: '右下角块' },
+                    { char: '◤', name: '左上角块' },
+                    { char: '◥', name: '右上角块' }
+                ]
+            },
+            {
+                id: "emoji",
+                name: "表情符号",
+                symbols: [
+                    { char: '☺', name: '微笑' },
+                    { char: '☻', name: '黑色笑脸' },
+                    { char: '😊', name: '眨眼笑' },
+                    { char: '😂', name: '笑哭' },
+                    { char: '😍', name: '爱心眼' },
+                    { char: '😎', name: '太阳镜笑脸' },
+                    { char: '😇', name: '天使笑脸' },
+                    { char: '😐', name: '中性表情' },
+                    { char: '😕', name: '困惑' },
+                    { char: '🙁', name: '微微不满' },
+                    { char: '😠', name: '生气' },
+                    { char: '😢', name: '哭泣' },
+                    { char: '😴', name: '睡觉' },
+                    { char: '😳', name: '脸红' },
+                    { char: '😨', name: '恐惧' },
+                    { char: '🤢', name: '恶心' },
+                    { char: '🤩', name: '星星眼' },
+                    { char: '🥳', name: '派对笑脸' },
+                    { char: '🤔', name: '思考' },
+                    { char: '😈', name: '小恶魔' },
+                    { char: '👿', name: '恶魔' },
+                    { char: '❤', name: '红心' },
+                    { char: '💛', name: '黄心' },
+                    { char: '💚', name: '绿心' },
+                    { char: '💙', name: '蓝心' },
+                    { char: '💜', name: '紫心' },
+                    { char: '💔', name: '心碎' },
+                    { char: '💕', name: '双心' },
+                    { char: '💞', name: '旋转心' },
+                    { char: '💓', name: '跳动心' }
+                ]
+            },
+            {
+                id: "decorative",
+                name: "装饰符号",
+                symbols: [
+                    { char: '✦', name: '四角星' },
+                    { char: '✧', name: '八角星' },
+                    { char: '✿', name: '花朵' },
+                    { char: '❀', name: '花朵' },
+                    { char: '❁', name: '花朵' },
+                    { char: '❂', name: '星花' },
+                    { char: '✥', name: '菱形星' },
+                    { char: '❈', name: '雪花' },
+                    { char: '❉', name: '星雪花' },
+                    { char: '❊', name: '雪花' },
+                    { char: '✣', name: '星号' },
+                    { char: '✤', name: '星号' },
+                    { char: '✺', name: '花形' },
+                    { char: '✹', name: '八角形' },
+                    { char: '✴', name: '八角星' },
+                    { char: '✳', name: '八角星' },
+                    { char: '✱', name: '星号' },
+                    { char: '✲', name: '星号' },
+                    { char: '✶', name: '六角星' },
+                    { char: '✵', name: '八角旋星' },
+                    { char: '✾', name: '花朵' },
+                    { char: '❃', name: '螺旋花' },
+                    { char: '❄', name: '雪花' },
+                    { char: '❅', name: '雪花' },
+                    { char: '❆', name: '六角雪花' },
+                    { char: '❇', name: '闪光' },
+                    { char: '❍', name: '空心圆圈' },
+                    { char: '◎', name: '二重圆圈' },
+                    { char: '◉', name: '靶心' },
+                    { char: '⦿', name: '实心靶心' },
+                    { char: '⦾', name: '圆圈加号' },
+                    { char: '⟡', name: '钻石星号' },
+                    { char: '⟢', name: '钻石' },
+                    { char: '⟣', name: '钻石' },
+                    { char: '⧰', name: '钻石' },
+                    { char: '⦻', name: '圆圈星号' },
+                    { char: '⧫', name: '菱形' },
+                    { char: '♢', name: '菱形' },
+                    { char: '♦', name: '菱形' },
+                    { char: '♧', name: '梅花' }
+                ]
+            },
+            {
+                id: "chinese-punctuation",
+                name: "中文标点",
+                symbols: [
+                    { char: '，', name: '逗号' },
+                    { char: '。', name: '句号' },
+                    { char: '、', name: '顿号' },
+                    { char: '；', name: '分号' },
+                    { char: '：', name: '冒号' },
+                    { char: '？', name: '问号' },
+                    { char: '！', name: '感叹号' },
+                    { char: '「', name: '左引号' },
+                    { char: '」', name: '右引号' },
+                    { char: '『', name: '左双引号' },
+                    { char: '』', name: '右双引号' },
+                    { char: '（', name: '左括号' },
+                    { char: '）', name: '右括号' },
+                    { char: '〔', name: '左方括号' },
+                    { char: '〕', name: '右方括号' },
+                    { char: '【', name: '左书名号' },
+                    { char: '】', name: '右书名号' },
+                    { char: '《', name: '左双书名号' },
+                    { char: '》', name: '右双书名号' },
+                    { char: '…', name: '省略号' },
+                    { char: '——', name: '破折号' },
+                    { char: '～', name: '波浪号' },
+                    { char: '·', name: '间隔号' },
+                    { char: '〈', name: '左单书名号' },
+                    { char: '〉', name: '右单书名号' },
+                    { char: '〖', name: '左空心括号' },
+                    { char: '〗', name: '右空心括号' },
+                    { char: '〃', name: '同上符号' },
+                    { char: '々', name: '叠字符号' },
+                    { char: '〆', name: '段落结束' },
+                    { char: '〒', name: '邮政符号' }
+                ]
+            },
+            {
+                id: "english-punctuation",
+                name: "英文标点",
+                symbols: [
+                    { char: ',', name: '逗号' },
+                    { char: '.', name: '句号' },
+                    { char: ';', name: '分号' },
+                    { char: ':', name: '冒号' },
+                    { char: '?', name: '问号' },
+                    { char: '!', name: '感叹号' },
+                    { char: "'", name: '单引号' },
+                    { char: '"', name: '双引号' },
+                    { char: '(', name: '左括号' },
+                    { char: ')', name: '右括号' },
+                    { char: '[', name: '左方括号' },
+                    { char: ']', name: '右方括号' },
+                    { char: '{', name: '左花括号' },
+                    { char: '}', name: '右花括号' },
+                    { char: '<', name: '左尖括号' },
+                    { char: '>', name: '右尖括号' },
+                    { char: '&', name: '和号' },
+                    { char: '@', name: 'at符号' },
+                    { char: '#', name: '井号' },
+                    { char: '$', name: '美元符号' },
+                    { char: '%', name: '百分号' },
+                    { char: '^', name: '脱字符' },
+                    { char: '*', name: '星号' },
+                    { char: '_', name: '下划线' },
+                    { char: '-', name: '连字符' },
+                    { char: '=', name: '等号' },
+                    { char: '+', name: '加号' },
+                    { char: '|', name: '竖线' },
+                    { char: '\\', name: '反斜杠' },
+                    { char: '/', name: '斜杠' },
+                    { char: '~', name: '波浪号' },
+                    { char: '`', name: '反引号' }
+                ]
+            }
+        ];
+
+        // 生成分类导航
+        function renderCategoryNav() {
+            const navContainer = document.getElementById('categoryNav');
+            navContainer.innerHTML = '';
+            
+            symbolsData.forEach(category => {
+                const navLink = document.createElement('div');
+                navLink.className = 'category-link';
+                navLink.textContent = category.name;
+                navLink.dataset.target = category.id;
+                
+                navLink.addEventListener('click', () => {
+                    const targetSection = document.getElementById(category.id);
+                    if (targetSection) {
+                        // 移除所有活动的分类链接
+                        document.querySelectorAll('.category-link').forEach(link => {
+                            link.classList.remove('active');
+                        });
+                        // 添加活动状态到当前链接
+                        navLink.classList.add('active');
+                        
+                        // 滚动到目标部分
+                        targetSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+                
+                navContainer.appendChild(navLink);
+            });
+        }
+
+        // 生成符号网格
+        function renderSymbols() {
+            const container = document.getElementById('symbolsContainer');
+            container.innerHTML = '';
+            
+            symbolsData.forEach(category => {
+                const categorySection = document.createElement('div');
+                categorySection.className = 'category-section';
+                categorySection.id = category.id;
+                
+                const header = document.createElement('h2');
+                header.className = 'category-header';
+                header.textContent = category.name;
+                
+                // 添加符号计数器
+                const counter = document.createElement('span');
+                counter.style.fontSize = '0.85rem';
+                counter.style.background = '#e0f0ff';
+                counter.style.borderRadius = '50px';
+                counter.style.padding = '3px 10px';
+                counter.textContent = `${category.symbols.length} 个符号`;
+                
+                header.appendChild(counter);
+                categorySection.appendChild(header);
+                
+                const grid = document.createElement('div');
+                grid.className = 'symbols-grid';
+                categorySection.appendChild(grid);
+                
+                category.symbols.forEach(symbol => {
+                    const card = document.createElement('div');
+                    card.className = 'symbol-card';
+                    card.dataset.char = symbol.char;
+                    card.dataset.name = symbol.name;
+                    card.dataset.category = category.name;
+                    
+                    const charElement = document.createElement('div');
+                    charElement.className = 'symbol';
+                    charElement.textContent = symbol.char;
+                    
+                    const nameElement = document.createElement('div');
+                    nameElement.className = 'symbol-name';
+                    nameElement.textContent = symbol.name;
+                    
+                    card.appendChild(charElement);
+                    card.appendChild(nameElement);
+                    
+                    card.addEventListener('click', () => {
+                        copyToClipboard(symbol.char);
+                        showNotification(`已复制: ${symbol.char}`);
+                    });
+                    
+                    grid.appendChild(card);
+                });
+                
+                container.appendChild(categorySection);
+            });
+            
+            // 添加监听器来高亮当前可见的分类
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const id = entry.target.id;
+                    if (entry.isIntersecting) {
+                        document.querySelectorAll('.category-link').forEach(link => {
+                            link.classList.remove('active');
+                            if (link.dataset.target === id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            document.querySelectorAll('.category-section').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        // 复制到剪贴板函数
+        function copyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+
+        // 显示复制成功的通知
+        function showNotification(message) {
+            const alert = document.getElementById('copiedAlert');
+            alert.textContent = message;
+            alert.classList.add('show');
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 2000);
+        }
+
+        // 搜索功能
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const allCards = document.querySelectorAll('.symbol-card');
+                const allSections = document.querySelectorAll('.category-section');
+                
+                // 如果没有搜索词，显示所有内容
+                if (searchTerm === '') {
+                    allCards.forEach(card => {
+                        card.style.display = '';
+                        card.parentElement.parentElement.style.display = '';
+                    });
+                    allSections.forEach(section => {
+                        section.style.display = '';
+                        section.querySelector('.symbols-grid').style.display = 'grid';
+                    });
+                    return;
+                }
+                
+                // 隐藏所有卡片和分类
+                allCards.forEach(card => card.style.display = 'none');
+                allSections.forEach(section => {
+                    section.style.display = 'none';
+                    section.querySelector('.symbols-grid').style.display = 'grid';
+                });
+                
+                // 先遍历所有卡片，找到匹配项
+                let foundAny = false;
+                allCards.forEach(card => {
+                    const char = card.dataset.char.toLowerCase();
+                    const name = card.dataset.name.toLowerCase();
+                    const category = card.dataset.category.toLowerCase();
+                    
+                    if (char.includes(searchTerm) || name.includes(searchTerm) || category.includes(searchTerm)) {
+                        card.style.display = '';
+                        // 显示卡片所在的分类区域
+                        const section = card.closest('.category-section');
+                        if (section) {
+                            section.style.display = '';
+                            foundAny = true;
+                        }
+                    }
+                });
+                
+                // 如果没有找到任何匹配项，显示提示
+                if (!foundAny) {
+                    const emptySection = document.createElement('div');
+                    emptySection.className = 'category-section';
+                    emptySection.innerHTML = `<h2 class="category-header">未找到匹配的符号</h2><p style="text-align: center; padding: 30px 15px;">请尝试不同的搜索关键词</p>`;
+                    
+                    const container = document.getElementById('symbolsContainer');
+                    container.appendChild(emptySection);
+                }
+            });
+        }
+
+        // 初始化页面
+        window.onload = function() {
+            renderCategoryNav();
+            renderSymbols();
+            setupSearch();
+            
+            // 设置第一个分类为活动状态
+            document.querySelector('.category-link').classList.add('active');
+        };
+    </script>
+</body>
+</html>

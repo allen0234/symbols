@@ -144,31 +144,35 @@
         }
         .copied-alert {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            padding: 12px 20px;
-            background: linear-gradient(to right, #2ecc71, #27ae60);
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
             color: white;
-            border-radius: 5px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-            transform: translateX(200%);
-            transition: transform 0.4s cubic-bezier(.17,.67,.41,1.44);
+            border-radius: 10px;
+            box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);
             z-index: 1000;
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
+            gap: 12px;
+            font-size: 1.2rem;
+            transition: transform 0.4s cubic-bezier(.17,.67,.41,1.44), opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
         }
         .copied-alert.show {
-            transform: translateX(0);
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
         .copied-alert::before {
             content: '✓';
-            font-size: 1.2rem;
+            font-size: 1.8rem;
             font-weight: bold;
+            margin-right: 10px;
         }
-        
+
         /* 分类导航样式 */
         .category-nav {
             position: sticky;
@@ -207,7 +211,7 @@
             box-shadow: 0 6px 12px rgba(52, 152, 219, 0.15);
             color: #1c6ea4;
         }
-        
+
         footer {
             background: linear-gradient(to right, #34495e, #2c3e50);
             color: #ecf0f1;
@@ -251,113 +255,114 @@
             padding-top: 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         /* 小屏设备优化 */
         @media (max-width: 768px) {
             body {
                 padding: 15px;
             }
-            
+
             .container {
                 padding-bottom: 15px;
             }
-            
+
             header {
                 padding: 15px 0;
             }
-            
+
             h1 {
                 font-size: 1.5rem;
             }
-            
+
             .description {
                 font-size: 0.9rem;
                 padding: 0 15px;
             }
-            
+
             .search-container {
                 margin: 20px auto;
             }
-            
+
             .symbols-grid {
                 grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
                 gap: 12px;
             }
-            
+
             .symbol {
                 font-size: 1.8rem;
             }
-            
+
             .symbol-name {
                 font-size: 0.8rem;
             }
-            
+
             .category-nav {
                 padding: 10px 0;
             }
-            
+
             .category-link {
                 padding: 7px 12px;
                 font-size: 0.85rem;
             }
-            
+
             .category-section {
                 padding: 15px;
                 margin-bottom: 25px;
             }
-            
+
             .category-header {
                 font-size: 1.2rem;
                 padding-bottom: 10px;
                 margin-bottom: 12px;
             }
-            
+
             .footer-links {
                 gap: 15px;
                 margin: 10px 0 12px;
             }
-            
+
             .footer-content {
                 padding: 0 15px;
             }
-            
+
             .copied-alert {
-                padding: 10px 16px;
-                font-size: 0.85rem;
+                padding: 15px 25px; 
+                font-size: 1.1rem;
+                min-width: 250px;
             }
         }
-        
+
         @media (max-width: 480px) {
             body {
                 padding: 10px;
             }
-            
+
             .symbols-grid {
                 grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
                 gap: 10px;
             }
-            
+
             .symbol {
                 font-size: 1.6rem;
             }
-            
+
             .symbol-name {
                 font-size: 0.75rem;
             }
-            
+
             .category-link {
                 padding: 6px 10px;
                 font-size: 0.8rem;
             }
-            
+
             .search-box {
                 padding: 10px 16px;
             }
-            
+
             .category-header {
                 font-size: 1.1rem;
             }
-            
+
             .footer-links {
                 gap: 10px;
             }
@@ -370,23 +375,23 @@
             <h1>特殊符号集合</h1>
             <p class="description">使用符号前请确认适用性，本网站仅提供符号的复制功能</p>
         </header>
-        
+
         <div class="search-container">
             <input type="text" id="searchInput" class="search-box" placeholder="搜索符号名称或符号..." autocomplete="off">
         </div>
-        
+
         <!-- 分类导航栏 -->
         <div class="category-nav">
             <div class="nav-container" id="categoryNav">
                 <!-- 分类导航将通过JavaScript动态生成 -->
             </div>
         </div>
-        
+
         <div id="symbolsContainer">
             <!-- 符号分类将通过JavaScript动态生成 -->
         </div>
     </div>
-    
+
     <!-- 页脚 -->
     <footer>
         <div class="footer-content">
@@ -400,9 +405,9 @@
             </div>
         </div>
     </footer>
-    
+
     <div class="copied-alert" id="copiedAlert">符号已复制到剪贴板</div>
-    
+
     <script>
         // 符号数据（按分类分组）
         const symbolsData = [
@@ -819,13 +824,13 @@
         function renderCategoryNav() {
             const navContainer = document.getElementById('categoryNav');
             navContainer.innerHTML = '';
-            
+
             symbolsData.forEach(category => {
                 const navLink = document.createElement('div');
                 navLink.className = 'category-link';
                 navLink.textContent = category.name;
                 navLink.dataset.target = category.id;
-                
+
                 navLink.addEventListener('click', () => {
                     const targetSection = document.getElementById(category.id);
                     if (targetSection) {
@@ -835,12 +840,12 @@
                         });
                         // 添加活动状态到当前链接
                         navLink.classList.add('active');
-                        
+
                         // 滚动到目标部分
                         targetSection.scrollIntoView({ behavior: 'smooth' });
                     }
                 });
-                
+
                 navContainer.appendChild(navLink);
             });
         }
@@ -849,16 +854,16 @@
         function renderSymbols() {
             const container = document.getElementById('symbolsContainer');
             container.innerHTML = '';
-            
+
             symbolsData.forEach(category => {
                 const categorySection = document.createElement('div');
                 categorySection.className = 'category-section';
                 categorySection.id = category.id;
-                
+
                 const header = document.createElement('h2');
                 header.className = 'category-header';
                 header.textContent = category.name;
-                
+
                 // 添加符号计数器
                 const counter = document.createElement('span');
                 counter.style.fontSize = '0.85rem';
@@ -866,43 +871,43 @@
                 counter.style.borderRadius = '50px';
                 counter.style.padding = '3px 10px';
                 counter.textContent = `${category.symbols.length} 个符号`;
-                
+
                 header.appendChild(counter);
                 categorySection.appendChild(header);
-                
+
                 const grid = document.createElement('div');
                 grid.className = 'symbols-grid';
                 categorySection.appendChild(grid);
-                
+
                 category.symbols.forEach(symbol => {
                     const card = document.createElement('div');
                     card.className = 'symbol-card';
                     card.dataset.char = symbol.char;
                     card.dataset.name = symbol.name;
                     card.dataset.category = category.name;
-                    
+
                     const charElement = document.createElement('div');
                     charElement.className = 'symbol';
                     charElement.textContent = symbol.char;
-                    
+
                     const nameElement = document.createElement('div');
                     nameElement.className = 'symbol-name';
                     nameElement.textContent = symbol.name;
-                    
+
                     card.appendChild(charElement);
                     card.appendChild(nameElement);
-                    
+
                     card.addEventListener('click', () => {
                         copyToClipboard(symbol.char);
                         showNotification(`已复制: ${symbol.char}`);
                     });
-                    
+
                     grid.appendChild(card);
                 });
-                
+
                 container.appendChild(categorySection);
             });
-            
+
             // 添加监听器来高亮当前可见的分类
             const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
@@ -917,7 +922,7 @@
                     }
                 });
             }, { threshold: 0.5 });
-            
+
             document.querySelectorAll('.category-section').forEach(section => {
                 observer.observe(section);
             });
@@ -938,7 +943,7 @@
             const alert = document.getElementById('copiedAlert');
             alert.textContent = message;
             alert.classList.add('show');
-            
+
             setTimeout(() => {
                 alert.classList.remove('show');
             }, 2000);
@@ -947,12 +952,12 @@
         // 搜索功能
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
-            
+
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase().trim();
                 const allCards = document.querySelectorAll('.symbol-card');
                 const allSections = document.querySelectorAll('.category-section');
-                
+
                 // 如果没有搜索词，显示所有内容
                 if (searchTerm === '') {
                     allCards.forEach(card => {
@@ -965,21 +970,21 @@
                     });
                     return;
                 }
-                
+
                 // 隐藏所有卡片和分类
                 allCards.forEach(card => card.style.display = 'none');
                 allSections.forEach(section => {
                     section.style.display = 'none';
                     section.querySelector('.symbols-grid').style.display = 'grid';
                 });
-                
+
                 // 先遍历所有卡片，找到匹配项
                 let foundAny = false;
                 allCards.forEach(card => {
                     const char = card.dataset.char.toLowerCase();
                     const name = card.dataset.name.toLowerCase();
                     const category = card.dataset.category.toLowerCase();
-                    
+
                     if (char.includes(searchTerm) || name.includes(searchTerm) || category.includes(searchTerm)) {
                         card.style.display = '';
                         // 显示卡片所在的分类区域
@@ -990,13 +995,13 @@
                         }
                     }
                 });
-                
+
                 // 如果没有找到任何匹配项，显示提示
                 if (!foundAny) {
                     const emptySection = document.createElement('div');
                     emptySection.className = 'category-section';
                     emptySection.innerHTML = `<h2 class="category-header">未找到匹配的符号</h2><p style="text-align: center; padding: 30px 15px;">请尝试不同的搜索关键词</p>`;
-                    
+
                     const container = document.getElementById('symbolsContainer');
                     container.appendChild(emptySection);
                 }
@@ -1008,7 +1013,7 @@
             renderCategoryNav();
             renderSymbols();
             setupSearch();
-            
+
             // 设置第一个分类为活动状态
             document.querySelector('.category-link').classList.add('active');
         };

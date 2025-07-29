@@ -952,21 +952,25 @@
         // 搜索功能
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
+                const allCards = document.querySelectorAll('.symbol-card');
+                const allSections = document.querySelectorAll('.category-section');
 
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase().trim();
-                const allCards = document.querySelectorAll('.symbol-card');
-                const allSections = document.querySelectorAll('.category-section');
+
+                // 移除之前可能存在的"未找到"提示
+                const existingNoResults = document.querySelector('.no-results-section');
+                if (existingNoResults) {
+                    existingNoResults.remove();
+                }
 
                 // 如果没有搜索词，显示所有内容
                 if (searchTerm === '') {
                     allCards.forEach(card => {
                         card.style.display = '';
-                        card.parentElement.parentElement.style.display = '';
                     });
                     allSections.forEach(section => {
                         section.style.display = '';
-                        section.querySelector('.symbols-grid').style.display = 'grid';
                     });
                     return;
                 }
@@ -975,7 +979,6 @@
                 allCards.forEach(card => card.style.display = 'none');
                 allSections.forEach(section => {
                     section.style.display = 'none';
-                    section.querySelector('.symbols-grid').style.display = 'grid';
                 });
 
                 // 先遍历所有卡片，找到匹配项
@@ -999,8 +1002,13 @@
                 // 如果没有找到任何匹配项，显示提示
                 if (!foundAny) {
                     const emptySection = document.createElement('div');
-                    emptySection.className = 'category-section';
-                    emptySection.innerHTML = `<h2 class="category-header">未找到匹配的符号</h2><p style="text-align: center; padding: 30px 15px;">请尝试不同的搜索关键词</p>`;
+                    emptySection.className = 'category-section no-results-section';
+                    emptySection.innerHTML = `
+                        <h2 class="category-header">未找到匹配的符号</h2>
+                        <p style="text-align: center; padding: 30px 15px;">
+                            请尝试不同的搜索关键词
+                        </p>
+                    `;
 
                     const container = document.getElementById('symbolsContainer');
                     container.appendChild(emptySection);
